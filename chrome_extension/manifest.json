@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Contentar",
+  "description": "The extension helps social media creator to reply comments and create post with LLMs, the extension analyze the html page and, locate the comments chain for which user clicks 'reply' button, and use LLMs to generate a message to reply the comment chain.",
+  "version": "1.0",
+  "action": {
+    "default_popup": "contentar.html",
+    "default_icon": "logo.png"
+  },
+  "content_scripts": [
+    {
+      "js": ["scripts/red_book.js"],
+      "matches": [
+        "https://www.xiaohongshu.com/explore/*"
+      ]
+    }
+  ]
+}
