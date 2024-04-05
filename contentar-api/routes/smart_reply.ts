@@ -5,7 +5,7 @@ import OpenAI from "openai";
 const router = Router();
 
 const openai = new OpenAI({
-    apiKey: "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",
+    apiKey: "",
 });
 
 router.route("/chat").post(async (req: Request, res: Response) => {
