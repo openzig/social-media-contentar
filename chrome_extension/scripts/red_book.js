@@ -145,9 +145,8 @@ async function onClickReply(event) {
     }
 
     chat = chat.concat(commentChain.reverse())
-
     // call chatGPT api
-    fetch("http://localhost:5000/api/v1/smart_reply/chat", {
+    fetch("https://social-media-contentar.uc.r.appspot.com/api/v1/smart_reply/chat", {
         method: "POST",
         body: JSON.stringify({messages: chat}),
         headers: {
