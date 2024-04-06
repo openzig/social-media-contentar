@@ -1,3 +1,16 @@
+class Comment {
+    constructor(id, content, author, parentId) {
+        this.id = id;
+        this.content = content;
+        this.author = author;
+        this.parentId = parentId;
+    }
+}
+
+let commentIdMap = new Map();
+let title = "";
+let description = "";
+
 // https://stackoverflow.com/questions/3219758/detect-changes-in-the-dom
 var observeDOM = (function () {
     var MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
@@ -22,47 +35,25 @@ var observeDOM = (function () {
     }
 })()
 
-const title = document.getElementById('detail-title')?.innerText;
-const description = document.getElementById('detail-desc')?.innerText;
+// capture any updates to comments container and update the comment id map
+observeDOM(document.getElementById('app'), function (m) {
+    title = document.getElementById('detail-title')?.innerText;
+    description = description = document.getElementById('detail-desc')?.innerText;
+    var addedNodes = [];
+    m.forEach(record => record.addedNodes.length & addedNodes.push(...record.addedNodes))
+    for (let i = 0; i < addedNodes.length; i++) {
+        if (!(addedNodes[i] instanceof HTMLDivElement)) {
+            continue;
+        }
 
-class Comment {
-    constructor(id, content, author, parentId) {
-        this.id = id;
-        this.content = content;
-        this.author = author;
-        this.parentId = parentId;
-    }
-}
+        const className = addedNodes[i].getAttribute('class');
+        if (!className || (!className.includes('comment') && !className.includes('note-container'))) continue;
 
-let commentIdMap = new Map();
-
-var checkCommentLoadFinishTimer = setInterval(checkCommentLoadFinish, 500);
-
-function checkCommentLoadFinish() {
-    if (document.getElementsByClassName("parent-comment").length > 0) {
-        clearInterval(checkCommentLoadFinishTimer);
+        commentIdMap = new Map();
         parseAllComments();
-
-        // capture any updates to comments container and update the comment id map
-        observeDOM(document.getElementsByClassName('comments-container')[0], function (m) {
-            var addedNodes = [];
-            m.forEach(record => record.addedNodes.length & addedNodes.push(...record.addedNodes))
-
-            for (let i = 0; i < addedNodes.length; i++) {
-                if (!(addedNodes[i] instanceof HTMLDivElement)) {
-                    continue;
-                }
-
-                const className = addedNodes[i].getAttribute('class');
-                if (className && className.includes('comment-item-sub')) {
-                    const parentCommentDiv = getParentDiv(addedNodes[i], 'parent-comment');
-                    parseParentCommentDiv(parentCommentDiv);
-                    break;
-                }
-            }
-        });
+        break;
     }
-}
+});
 
 function parseAllComments() {
     const parentComments = document.getElementsByClassName('parent-comment');
@@ -145,19 +136,25 @@ async function onClickReply(event) {
     }
 
     chat = chat.concat(commentChain.reverse())
+
+    const submitButton = document.getElementsByClassName('submit')[0];
+    submitButton.innerText = "生成中...";
     // call chatGPT api
     fetch("https://social-media-contentar.uc.r.appspot.com/api/v1/smart_reply/chat", {
         method: "POST",
-        body: JSON.stringify({messages: chat}),
+        body: JSON.stringify({ messages: chat }),
         headers: {
             "Content-type": "application/json",
         }
     })
-    .then((response) => response.json())
-        .then((result) => document.getElementById('content-textarea').innerText = result.content)
-        .catch((error) => console.error(error));
+        .then((response) => response.json())
+        .then((result) => {
+            document.getElementById('content-textarea').innerText = result.content;
+            submitButton.innerText = "发送";
+            document.getElementsByClassName('recent-emoji')[0]?.remove();
+        })
+        .catch((error) => submitButton.innerText = "生成失败(╥﹏╥)");
 
-    const submitButton = document.getElementsByClassName('submit')[0];
     submitButton.disabled = false;
     submitButton.classList.remove("gray");
 }
