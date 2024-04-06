@@ -11,7 +11,8 @@
     {
       "js": ["scripts/red_book.js"],
       "matches": [
-        "https://www.xiaohongshu.com/explore/*"
+        "https://www.xiaohongshu.com/explore/*",
+        "https://www.xiaohongshu.com/notification"
       ]
     }
   ]
