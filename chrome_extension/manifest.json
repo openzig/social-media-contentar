@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Contentar",
-  "description": "The extension helps social media creator to reply comments and create post with LLMs, the extension analyze the html page and, locate the comments chain for which user clicks 'reply' button, and use LLMs to generate a message to reply the comment chain.",
+  "description": "Get AI-powered social replies with one click! Analyze comments, get instant responses. AI post creation coming soon.",
   "version": "1.0",
   "action": {
     "default_popup": "contentar.html",
