@@ -9,7 +9,7 @@
   },
   "content_scripts": [
     {
-      "js": ["scripts/red_book.js"],
+      "js": ["scripts/common.js", "scripts/red_book.js"],
       "matches": [
         "https://www.xiaohongshu.com/explore/*",
         "https://www.xiaohongshu.com/notification"

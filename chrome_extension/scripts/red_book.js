@@ -1,39 +1,6 @@
-class Comment {
-    constructor(id, content, author, parentId) {
-        this.id = id;
-        this.content = content;
-        this.author = author;
-        this.parentId = parentId;
-    }
-}
-
 let commentIdMap = new Map();
 let title = "";
 let description = "";
-
-// https://stackoverflow.com/questions/3219758/detect-changes-in-the-dom
-var observeDOM = (function () {
-    var MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
-
-    return function (obj, callback) {
-        if (!obj || obj.nodeType !== 1) return;
-
-        if (MutationObserver) {
-            // define a new observer
-            var mutationObserver = new MutationObserver(callback)
-
-            // have the observer observe for changes in children
-            mutationObserver.observe(obj, { childList: true, subtree: true })
-            return mutationObserver
-        }
-
-        // browser support fallback
-        else if (window.addEventListener) {
-            obj.addEventListener('DOMNodeInserted', callback, false)
-            obj.addEventListener('DOMNodeRemoved', callback, false)
-        }
-    }
-})()
 
 // capture any updates to comments container and update the comment id map
 observeDOM(document.getElementById('app'), function (m) {
@@ -47,20 +14,15 @@ observeDOM(document.getElementById('app'), function (m) {
         }
 
         const className = addedNodes[i].getAttribute('class');
-        if (!className || (!className.includes('comment') && !className.includes('note-container'))) continue;
+        if (!className ||
+            (!className.includes('comment') && !className.includes('note-container'))) continue;
 
         commentIdMap = new Map();
-        parseAllComments();
+        parseAllComments(
+            'parent-comment', (parentCommentDiv) => parseParentCommentDiv(parentCommentDiv));
         break;
     }
 });
-
-function parseAllComments() {
-    const parentComments = document.getElementsByClassName('parent-comment');
-    for (let i = 0; i < parentComments.length; i++) {
-        parseParentCommentDiv(parentComments[i]);
-    }
-}
 
 function parseParentCommentDiv(parentComment) {
     const parentCommentDiv = parentComment.getElementsByClassName('comment-item')[0];
@@ -98,24 +60,6 @@ function trimContent(content) {
     return content;
 }
 
-function getPrevId(commentAuthorMap, replyTo, defaultParentId) {
-    // this is a parent comment
-    if (commentAuthorMap.size == 0) {
-        return defaultParentId;
-    }
-
-    // this is the first sub comment
-    if (commentAuthorMap.size == 1) {
-        return commentAuthorMap.values().next().value.id;
-    }
-
-    if (commentAuthorMap.has(replyTo)) {
-        return commentAuthorMap.get(replyTo).id;
-    }
-
-    return defaultParentId;
-}
-
 async function onClickReply(event) {
     let commentId = getParentDiv(event.target, 'comment-item').id;
     if (!commentIdMap.has(commentId)) {
@@ -137,36 +81,22 @@ async function onClickReply(event) {
 
     chat = chat.concat(commentChain.reverse())
 
-    const submitButton = document.getElementsByClassName('submit')[0];
-    submitButton.innerText = "生成中...";
     // call chatGPT api
-    fetch("https://social-media-contentar.uc.r.appspot.com/api/v1/smart_reply/chat", {
-        method: "POST",
-        body: JSON.stringify({ messages: chat }),
-        headers: {
-            "Content-type": "application/json",
-        }
-    })
-        .then((response) => response.json())
-        .then((result) => {
-            document.getElementById('content-textarea').innerText = result.content;
+    const submitButton = document.getElementsByClassName('submit')[0];
+    callChatApi(
+        function () {
+            submitButton.innerText = "生成中...";
+        },
+        function (response) {
+            document.getElementById('content-textarea').innerText = response;
             submitButton.innerText = "发送";
             document.getElementsByClassName('recent-emoji')[0]?.remove();
-        })
-        .catch((error) => submitButton.innerText = "生成失败(╥﹏╥)");
-
-    submitButton.disabled = false;
-    submitButton.classList.remove("gray");
+        },
+        function (error) {
+            submitButton.innerText = "生成失败(╥﹏╥)";
+        },
+        function () {
+            submitButton.disabled = false;
+            submitButton.classList.remove("gray");
+        });
 }
-
-function getParentDiv(element, targetClassName) {
-    while (element) {
-        const className = element.getAttribute('class');
-        if (className && className.includes(targetClassName)) {
-            return element;
-        }
-
-        element = element.parentElement;
-    }
-}
-
