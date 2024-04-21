@@ -2,17 +2,29 @@
   "manifest_version": 3,
   "name": "Contentar",
   "description": "Get AI-powered social replies with one click! Analyze comments, get instant responses. AI post creation coming soon.",
-  "version": "1.0",
+  "version": "1.1",
   "action": {
     "default_popup": "contentar.html",
     "default_icon": "logo.png"
   },
   "content_scripts": [
     {
-      "js": ["scripts/common.js", "scripts/red_book.js"],
+      "js": [
+        "scripts/common.js",
+        "scripts/red_book.js"
+      ],
       "matches": [
         "https://www.xiaohongshu.com/explore/*",
         "https://www.xiaohongshu.com/notification"
+      ]
+    },
+    {
+      "js": [
+        "scripts/common.js",
+        "scripts/bilibili.js"
+      ],
+      "matches": [
+        "https://www.bilibili.com/video/*"
       ]
     }
   ]

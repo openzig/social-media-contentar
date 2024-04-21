@@ -62,10 +62,6 @@ function trimContent(content) {
 
 async function onClickReply(event) {
     let commentId = getParentDiv(event.target, 'comment-item').id;
-    if (!commentIdMap.has(commentId)) {
-        const parentCommentDiv = getParentDiv(event.target, 'parent-comment');
-        parseParentCommentDiv(parentCommentDiv);
-    }
 
     // chat starts with post content
     chat = [{ role: 'user', content: title + ',' + description }];
